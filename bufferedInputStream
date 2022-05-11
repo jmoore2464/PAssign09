@@ -1,0 +1,130 @@
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.EOFException;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
+import java.util.ArrayList;
+
+public class PAssign09 {
+
+	public static void main(String[] args) throws FileNotFoundException, IOException {
+		// create variables
+		String employee;
+		double salary;
+		double YOS;
+		double totalSalaryBefore = 0.0, totalSalaryAfter = 0.0;
+		
+
+		//create try block to read file and write file
+		try (DataInputStream input = new DataInputStream(new BufferedInputStream((new FileInputStream("src/employeeData.dat"))));
+				ObjectOutputStream output = new ObjectOutputStream(new BufferedOutputStream(
+						new FileOutputStream("src/employeeDataProcessed.dat")));) {
+			while (true) {
+				//read employee file
+				employee = input.readUTF();
+				salary = input.readDouble();
+				YOS = input.readDouble();
+
+				Employee employee1 = new Employee(employee, salary, YOS);
+				// write file for processed data
+				output.writeUTF(employee);
+				output.writeDouble(salary);
+				output.writeDouble(YOS);
+				//add all salaries before raises
+				totalSalaryBefore += employee1.getSalary();
+				// calculate raise
+				output.writeDouble(employee1.processRaise(employee1.getYOS(), employee1.getSalary()));
+				// add all salaries with raises
+				totalSalaryAfter += employee1.processRaise(employee1.getYOS(), employee1.getSalary());
+
+			}
+
+		} catch (EOFException e) {
+			//print totals
+			System.out.printf("Total Salary Before: $%,.2f%n", totalSalaryBefore);
+			System.out.printf("Total Salary After: $%,.2f", totalSalaryAfter);
+
+		}
+		
+	}
+
+}
+
+class Employee implements Serializable {
+	// create the variables
+	private double salary;
+	private double YOS;
+	private String employee;
+	// constructors
+	public Employee(String employee, double salary, double YOS) {
+
+		setEmployee(employee);
+		setSalary(salary);
+		setYOS(YOS);
+
+	}
+	// create getters
+	public String getEmployee() {
+		return this.employee;
+	}
+
+	public double getSalary() {
+		return this.salary;
+	}
+
+	public double getYOS() {
+		return this.YOS;
+	}
+	// create setters
+	public String setEmployee(String employee) {
+		return this.employee = employee;
+	}
+
+	public double setSalary(double salary) {
+		return this.salary = salary;
+	}
+
+	public double setYOS(double YOS) {
+		return this.YOS = YOS;
+	}
+	// method to calculate raises
+	public double processRaise(double YOS, double salary) {
+		if (YOS >= 0 && YOS <= 2 && salary >= 0.0 && salary <= 30000.0) {
+			return salary + (salary * (3.00 / 100));
+
+		} else if (salary >= 0.0 && salary <= 30000.0 && YOS >= 3) {
+			return salary + (salary * (2.50 / 100));
+
+		} else if (YOS >= 0 && YOS <= 5 && salary > 30000.0 && salary <= 60000.0) {
+			return salary + (salary * (2.25 / 100));
+
+		} else if (salary > 30000.0 && salary <= 60000.0 && YOS > 6) {
+			return salary + (salary * (2.00 / 100));
+
+		} else if (YOS >= 0 && YOS <= 5 && salary > 60000.0 && salary <= 80000.0) {
+			return salary + (salary * (1.75 / 100));
+
+		} else if (salary > 60000.0 && salary <= 80000.0 && YOS > 6) {
+			return salary + (salary * (1.50 / 100));
+
+		} else if (YOS >= 0 && YOS <= 5 && salary > 80000.0) {
+			return salary + (salary * (1.25 / 100));
+
+		} else if (salary > 80000.0 && YOS > 6) {
+			return salary + (salary * (1.00 / 100));
+		}
+		return salary;
+
+	}
+	// toString to test output
+	@Override
+	public String toString() {
+		return String.format("%s %.2f %.2f", getEmployee(), getSalary(), getYOS());
+	}
+}
